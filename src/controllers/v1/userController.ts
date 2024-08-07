@@ -3,6 +3,7 @@ import { HttpBadRequestHandler, HttpCreatedHandler } from '../../helpers/httpExc
 import { userService } from '../../services/v1/userService';
 import { validate } from '../../utils/zodValidation';
 import { signUpValidation } from '../../validations/signup';
+import { hashPassword } from '../../utils/passwordManager';
 
 const { findOne, save } = userService();
 export const userController = () => {
@@ -20,6 +21,12 @@ export const userController = () => {
             if (user) {
                 return HttpBadRequestHandler('user already exists');
             }
+            const hashedPassword = await hashPassword(password);
+            const savedUser = await save({
+                username,
+                email,
+                password: hashedPassword
+            });
 
             return HttpCreatedHandler({
                 responseMessage: 'User created successfully',
