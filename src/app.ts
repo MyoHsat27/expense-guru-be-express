@@ -6,6 +6,9 @@ const app = express();
 app.use(express.json());
 
 app.use('/api/v1', v1Routes);
+app.use('/test', (req: Request, res: Response) => {
+    res.send('Thar Linn Htet - Larry, Myo Hsat Nanda - Open Heaven');
+});
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
