@@ -1,1 +1,1 @@
-About this repo?, fuck it! it is random guys group just writing code. No need to see anything.
+**About this repo?** Fuck it! It is a random guys group just writing code. No need to see anything.
