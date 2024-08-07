@@ -1,9 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
 import v1Routes from './routes/v1/index';
+import { dbConnect } from './config/mongoose';
 
 const app = express();
 
 app.use(express.json());
+
+dbConnect();
 
 app.use('/api/v1', v1Routes);
 app.use('/test', (req: Request, res: Response) => {
