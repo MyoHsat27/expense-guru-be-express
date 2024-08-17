@@ -1,5 +1,5 @@
-import User from '../../models/user';
-import { UserCreateObject } from '../../types/user';
+import User from "../../models/user";
+import { UserCreateObject } from "../../types/user";
 
 export const userService = () => {
     const findOne = async (param: Record<string, string>) => {

@@ -1,73 +1,74 @@
-import { HttpStatus } from '../enums/httpStatus';
+import { Response } from "express";
+import { HttpStatus } from "../enums/httpStatus";
 
-export function httpExceptionHandler(errorMessage: string | object, status: HttpStatus) {
-    return Response.json(errorMessage, { status });
-}
 function transformMessage(message: string | object) {
-    if (typeof message === 'string') {
+    if (typeof message === "string") {
         return { message };
     }
     return message;
 }
 
-export function HttpNotFoundHandler(message: string | object = 'Not Found'): Response {
-    return Response.json(
-        { status: HttpStatus.NOT_FOUND, ...transformMessage(message) },
-        { status: HttpStatus.NOT_FOUND }
-    );
+export function httpExceptionHandler(res: Response, errorMessage: string | object, status: HttpStatus) {
+    res.send(status).json({
+        errorMessage
+    });
 }
 
-export function HttpCreatedHandler(message: string | object = 'Created'): Response {
-    return Response.json({ status: HttpStatus.CREATED, ...transformMessage(message) }, { status: HttpStatus.CREATED });
+export function HttpNotFoundHandler(res: Response, message: string | object = "Not Found"): void {
+    res.status(HttpStatus.NOT_FOUND).json({
+        status: HttpStatus.NOT_FOUND,
+        ...transformMessage(message)
+    });
 }
 
-export function HttpBadRequestHandler(message: string | object = 'Bad Request'): Response {
-    return Response.json(
-        { status: HttpStatus.BAD_REQUEST, ...transformMessage(message) },
-        { status: HttpStatus.BAD_REQUEST }
-    );
+export function HttpCreatedHandler(res: Response, message: string | object = "Created"): void {
+    res.status(HttpStatus.CREATED).json({
+        status: HttpStatus.CREATED,
+        ...transformMessage(message)
+    });
 }
 
-export function HttpUnauthorizedHandler(message: string | object = 'Unauthorized'): Response {
-    return Response.json(
-        { status: HttpStatus.UNAUTHORIZED, ...transformMessage(message) },
-        { status: HttpStatus.UNAUTHORIZED }
-    );
+export function HttpBadRequestHandler(res: Response, message: string | object = "Bad Request"): void {
+    res.status(HttpStatus.BAD_REQUEST).json({
+        status: HttpStatus.BAD_REQUEST,
+        ...transformMessage(message)
+    });
 }
 
-export function HttpForbiddenHandler(message: string | object = 'Forbidden'): Response {
-    return Response.json(
-        { status: HttpStatus.FORBIDDEN, ...transformMessage(message) },
-        { status: HttpStatus.FORBIDDEN }
-    );
+export function HttpUnauthorizedHandler(res: Response, message: string | object = "Unauthorized"): void {
+    res.status(HttpStatus.UNAUTHORIZED).json({
+        status: HttpStatus.UNAUTHORIZED,
+        ...transformMessage(message)
+    });
 }
 
-export function HttpMethodNotAllowedHandler(message: string | object = 'Method Not Allowed'): Response {
-    return Response.json(
-        {
-            status: HttpStatus.METHOD_NOT_ALLOWED,
-            ...transformMessage(message)
-        },
-        { status: HttpStatus.METHOD_NOT_ALLOWED }
-    );
+export function HttpForbiddenHandler(res: Response, message: string | object = "Forbidden"): void {
+    res.status(HttpStatus.FORBIDDEN).json({
+        status: HttpStatus.FORBIDDEN,
+        ...transformMessage(message)
+    });
 }
 
-export function HttpInternalServerErrorHandler(message: string | object = 'Internal Server Error'): Response {
-    return Response.json(
-        {
-            status: HttpStatus.INTERNAL_SERVER_ERROR,
-            ...transformMessage(message)
-        },
-        { status: HttpStatus.INTERNAL_SERVER_ERROR }
-    );
+export function HttpMethodNotAllowedHandler(res: Response, message: string | object = "Method Not Allowed"): void {
+    res.status(HttpStatus.METHOD_NOT_ALLOWED).json({
+        status: HttpStatus.METHOD_NOT_ALLOWED,
+        ...transformMessage(message)
+    });
 }
 
-export function HttpServiceUnavailableHandler(message: string | object = 'Service Unavailable'): Response {
-    return Response.json(
-        {
-            status: HttpStatus.SERVICE_UNAVAILABLE,
-            ...transformMessage(message)
-        },
-        { status: HttpStatus.SERVICE_UNAVAILABLE }
-    );
+export function HttpInternalServerErrorHandler(
+    res: Response,
+    message: string | object = "Internal Server Error"
+): void {
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        ...transformMessage(message)
+    });
+}
+
+export function HttpServiceUnavailableHandler(res: Response, message: string | object = "Service Unavailable"): void {
+    res.status(HttpStatus.SERVICE_UNAVAILABLE).json({
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+        ...transformMessage(message)
+    });
 }
