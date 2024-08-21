@@ -1,14 +1,16 @@
-import { HttpBadRequestHandler, HttpCreatedHandler } from "../../helpers/httpExceptionHandler";
+import { HttpBadRequestHandler, HttpFetchedHandler } from "../../helpers/httpExceptionHandler";
 import { Request, Response } from "express";
 import { walletService } from "../../services/v1/walletService";
+import { UserObject } from "../../types/user";
 
+const { findByUserId: findBalanceByUserId } = walletService();
 export const walletController = () => {
-    const { findByUserId: findBalanceByUserId } = walletService();
     const getBalance = async (req: Request, res: Response) => {
-        const userId = req.body.get("userId")!;
+        const user = req.user as UserObject;
+        const userId = user._id;
         try {
             const balance = await findBalanceByUserId(userId);
-            return HttpCreatedHandler(res, {
+            return HttpFetchedHandler(res, {
                 success: true,
                 data: balance
             });
