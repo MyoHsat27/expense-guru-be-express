@@ -1,12 +1,12 @@
 import passport from "passport";
 import { Express } from "express";
 import jwtStrategy from "./strategies/jwt.strategies";
-import User from "../models/user";
-import { UserObject } from "../types/user";
+import googleStrategy from "./strategies/google.strategies";
 
 const usePassport = (app: Express): void => {
     app.use(passport.initialize());
     passport.use(jwtStrategy);
+    passport.use(googleStrategy);
 };
 
 export default usePassport;
