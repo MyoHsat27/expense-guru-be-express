@@ -15,7 +15,8 @@ router.post(
     passport.authenticate("google", {
         session: false,
         successRedirect: "/api/v1/wallet/balance",
-        failureRedirect: "/users/login"
+        failureRedirect: "/users/login",
+        failureMessage: true
     })
 );
 

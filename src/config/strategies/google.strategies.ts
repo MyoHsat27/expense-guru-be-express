@@ -8,10 +8,10 @@ const googleOptions: StrategyOptions = {
     clientID: process.env.GOOGLE_CLIENT_ID! as string,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET! as string,
     callbackURL: process.env.GOOGLE_CALLBACK,
-    scope: ["profile"]
+    scope: ["profile", "email"]
 };
 
-const googleStrategy = new GoogleStrategy(googleOptions, async (token, tokenSecret, profile, done) => {
+const googleStrategy = new GoogleStrategy(googleOptions, async (accessToken, refreshToken, profile, done) => {
     const { sub, name, email } = profile._json;
     try {
         let user = await User.find({ email });
