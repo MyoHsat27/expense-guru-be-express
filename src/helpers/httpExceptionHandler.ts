@@ -21,6 +21,13 @@ export function HttpNotFoundHandler(res: Response, message: string | object = "N
     });
 }
 
+export function HttpFetchedHandler(res: Response, message: string | object = "OK"): void {
+    res.status(HttpStatus.OK).json({
+        status: HttpStatus.OK,
+        ...transformMessage(message)
+    });
+}
+
 export function HttpCreatedHandler(res: Response, message: string | object = "Created"): void {
     res.status(HttpStatus.CREATED).json({
         status: HttpStatus.CREATED,
