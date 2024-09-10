@@ -36,15 +36,10 @@ export const userController = () => {
 
             const token = await generateToken(tokenData);
 
-            res.cookie("authToken", token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                maxAge: 24 * 60 * 60 * 1000
-            });
-
             HttpCreatedHandler(res, {
                 message: "Login successful",
-                success: true
+                success: true,
+                authToken: token
             });
         } catch (error: any) {
             return HttpBadRequestHandler(res, { error: error.message });
@@ -66,6 +61,7 @@ export const userController = () => {
             if (user) {
                 return HttpBadRequestHandler(res, "user already exists");
             }
+            console.log("FUCK");
             const hashedPassword = await hashPassword(password);
             const savedUser = await save({
                 username,
