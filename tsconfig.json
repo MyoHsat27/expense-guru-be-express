@@ -15,7 +15,8 @@
         "allowSyntheticDefaultImports": true,
         "noImplicitReturns": true,
         "isolatedModules": true,
-        "noEmit": true
+        "noEmit": false,
+        "preserveSymlinks": true
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules"],
