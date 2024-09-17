@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
 import v1Routes from "./routes/v1/index";
 import { dbConnect } from "./config/mongoose";
 import usePassport from "./config/passport";
@@ -7,6 +8,12 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
+
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed HTTP methods
+    credentials: true  // If you are using cookies, set this to true
+}))
 
 app.use(express.json());
 
