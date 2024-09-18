@@ -10,13 +10,13 @@ export const generateToken = async (tokenData: object) => {
 export const getDataFromToken = (request: Request) => {
     try {
         // Retrieve the token from the cookies
-        const token = request.cookies.get("token")?.value || "";
+        const token = request.cookies.authToken || "";
 
         // Verify and decode the token using the secret key
-        const decodedToken: any = jsonwebtoken.verify(token, process.env.SECRET_TOKEN!);
+        const decodedToken: any = jsonwebtoken.verify(token, process.env.JWT_SECRET!);
 
         // Return the user ID from the decoded token
-        return decodedToken.id;
+        return decodedToken;
     } catch (error: any) {
         throw new Error("Unauthorized");
     }

@@ -29,12 +29,15 @@ export const userController = () => {
             }
 
             const tokenData = {
-                _id: user._id,
+                id: user._id,
                 username: user.username,
                 email: user.email
             };
 
             const token = await generateToken(tokenData);
+            res.cookie("authToken", token, {
+                httpOnly: true,
+            });
 
             HttpCreatedHandler(res, {
                 message: "Login successful",
@@ -77,5 +80,19 @@ export const userController = () => {
             return HttpBadRequestHandler(res, { error: error.message });
         }
     };
-    return { register, login };
+
+    const authMe = async (req: Request, res: Response) => {
+        try {
+            const user = req.user; // Ensure this has been set by `authenticateJWT`
+            return HttpCreatedHandler(res, {
+                message: "Authenticated User found",
+                success: true,
+                data: user
+            });
+        } catch (error: any) {
+            return HttpBadRequestHandler(res, { error: error.message });
+        }
+    };
+
+    return { register, login, authMe };
 };

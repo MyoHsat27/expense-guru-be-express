@@ -4,7 +4,7 @@ import v1Routes from "./routes/v1/index";
 import { dbConnect } from "./config/mongoose";
 import usePassport from "./config/passport";
 import dotenv from "dotenv";
-
+import cookieParser from 'cookie-parser';
 dotenv.config();
 
 const app = express();
@@ -14,7 +14,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed HTTP methods
     credentials: true  // If you are using cookies, set this to true
 }))
-
+app.use(cookieParser())
 app.use(express.json());
 
 dbConnect();
