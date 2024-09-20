@@ -93,6 +93,21 @@ export const userController = () => {
             return HttpBadRequestHandler(res, { error: error.message });
         }
     };
+    const logout = async(req:Request,res:Response)=>{
+        try{
+            res.cookie("authToken", "", {
+                httpOnly: true,
+                expires: new Date(0), // Set expiration date to the past
+            });
 
-    return { register, login, authMe };
+            return HttpCreatedHandler(res,{
+                message:"Logout Successfully",
+                success:true
+            });
+            
+        }catch(error:any){
+            return   HttpBadRequestHandler(res, { error: error.message });
+        }
+    }
+    return { register, login, authMe, logout };
 };
