@@ -1,8 +1,13 @@
 import jsonwebtoken from "jsonwebtoken";
 import { Request } from "express";
 
-export const generateToken = async (tokenData: object) => {
-    return await jsonwebtoken.sign(tokenData, process.env.JWT_SECRET!, {
+export const generateToken = async (user:any) => {
+    const payload = {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+    };
+    return await jsonwebtoken.sign(payload, process.env.JWT_SECRET!, {
         expiresIn: "1d"
     });
 };
