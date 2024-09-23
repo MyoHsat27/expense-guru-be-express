@@ -99,10 +99,7 @@ export const userController = () => {
     };
     const logout = async(req:Request,res:Response)=>{
         try{
-            res.cookie("authToken", "", {
-                httpOnly: true,
-                expires: new Date(0), // Set expiration date to the past
-            });
+            res.clearCookie("authToken",{httpOnly:true,secure:true});
 
             return HttpCreatedHandler(res,{
                 message:"Logout Successfully",

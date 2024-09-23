@@ -12,18 +12,18 @@ const googleOptions: StrategyOptions = {
 };
 
 const googleStrategy = new GoogleStrategy(googleOptions, async (accessToken, refreshToken, profile, done) => {
-    const { sub, name, email } = profile._json;
+    const { sub,name, email } = profile._json;
     try {
-        let user = await User.find({ email });
+        let user = await User.findOne({ email });
 
         if (user) {
-            return done(null, user);
+            return done(null, user.toObject());
         } else {
             const randomPassword = Math.random().toString(36).slice(-8);
-
             const hashedPassword = await hashPassword(randomPassword);
+            
             user = await User.create({
-                name,
+                username:name,
                 email,
                 password: hashedPassword,
                 isVerified: true
