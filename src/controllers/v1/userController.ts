@@ -6,6 +6,8 @@ import { signUpValidation } from "../../validations/signup";
 import { hashPassword, comparePassword } from "../../utils/passwordManager";
 import { signInValidation } from "../../validations/signin";
 import { generateToken } from "../../utils/jwtManager";
+import { authMeUserResponseMapper } from "../../utils/mappers/user.mapper";
+import { UserObject, UserResponseObject } from "../../types/user";
 
 const { findOne, save } = userService();
 export const userController = () => {
@@ -83,11 +85,13 @@ export const userController = () => {
 
     const authMe = async (req: Request, res: Response) => {
         try {
-            const user = req.user; // Ensure this has been set by `authenticateJWT`
+            const userId = req.user as string; // Ensure this has been set by `authenticateJWT`
+            const user = await findOne({ _id: userId });
+            const userResponse = authMeUserResponseMapper().map<UserObject, UserResponseObject>(user, "UserObject", "UserResponseObject")
             return HttpCreatedHandler(res, {
                 message: "Authenticated User found",
                 success: true,
-                data: user
+                data: userResponse
             });
         } catch (error: any) {
             return HttpBadRequestHandler(res, { error: error.message });
