@@ -12,8 +12,7 @@ const googleOptions: StrategyOptions = {
 };
 
 const googleStrategy = new GoogleStrategy(googleOptions, async (accessToken, refreshToken, profile, done) => {
-    const { sub, email } = profile._json;
-    const name = profile.displayName || "User"; 
+    const { sub,name, email } = profile._json;
     try {
         let user = await User.findOne({ email });
 
@@ -21,12 +20,10 @@ const googleStrategy = new GoogleStrategy(googleOptions, async (accessToken, ref
             return done(null, user.toObject());
         } else {
             const randomPassword = Math.random().toString(36).slice(-8);
-
             const hashedPassword = await hashPassword(randomPassword);
-            const username = name.split(" ").join("_").toLowerCase();
+            
             user = await User.create({
-                username,
-                name,
+                username:name,
                 email,
                 password: hashedPassword,
                 isVerified: true

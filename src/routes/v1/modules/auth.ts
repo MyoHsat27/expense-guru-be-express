@@ -1,6 +1,7 @@
 import express, { Router, Request, Response } from "express";
 import passport from "passport";
 import { generateToken } from "../../../utils/jwtManager";
+import { UserObject } from "../../../types/user";
 
 const router: Router = express.Router();
 
@@ -15,11 +16,10 @@ router.get(
     "/google/callback",
     passport.authenticate("google", {
         session: false,
-        // successRedirect: "http://localhost:3000/home",
         failureRedirect: "/users/login",
         failureMessage: true
     }), async(req, res) => {
-        // Check if req.user is defined
+
         if (!req.user) {
             return res.status(400).json({
                 success: false,
@@ -27,13 +27,12 @@ router.get(
             });
         }
 
-        // Assuming user info is in req.user
-        const user = req.user as object; // Cast req.user to any or a User type if you have one
+        const user = req.user as UserObject; 
         const token =await generateToken(user); // Generate JWT token
         
         // Set the token in the cookie
         res.cookie("authToken", token, {
-            httpOnly: true, // Prevents JavaScript access to the cookie
+            httpOnly: true,
         });
 
         // Redirect to the home page
