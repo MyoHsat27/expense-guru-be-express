@@ -15,7 +15,7 @@ export const generateToken = async (user:any) => {
 export const getDataFromToken = (request: Request) => {
     try {
         // Retrieve the token from the cookies
-        const token = request.cookies.authToken || "";
+        const token = request.cookies.authToken;
         if (!token) {
             throw new Error("No token provided!")
         }

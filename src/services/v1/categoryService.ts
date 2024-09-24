@@ -25,9 +25,9 @@ export const CategoryService = () => {
         }
     }
 
-    const getAllCategories = async () => {
+    const getAllCategories = async (user_id: string) => {
         try {
-            const categories = await Category.find({});
+            const categories = await Category.find({userId: user_id});
             return categories;
         } catch (error: any) {
             throw new Error("Failed to retrieve categories: " + error.message);

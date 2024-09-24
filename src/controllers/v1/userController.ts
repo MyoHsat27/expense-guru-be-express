@@ -31,7 +31,7 @@ export const userController = () => {
             }
 
             const tokenData = {
-                id: user._id,
+                _id: user._id,
                 username: user.username,
                 email: user.email
             };
@@ -76,7 +76,8 @@ export const userController = () => {
 
             return HttpCreatedHandler(res, {
                 responseMessage: "User created successfully",
-                success: true
+                success: true,
+                data: savedUser
             });
         } catch (error: any) {
             return HttpBadRequestHandler(res, { error: error.message });

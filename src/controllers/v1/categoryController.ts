@@ -2,10 +2,10 @@ import { CategoryService } from "../../services/v1/categoryService";
 import { Response, Request } from "express";
 import { validate } from "../../utils/zodValidation";
 import { categoryCreateValidation } from "../../validations/category/create";
-import { HttpBadRequestHandler, HttpCreatedHandler } from "../../helpers/httpExceptionHandler";
+import { HttpBadRequestHandler, HttpCreatedHandler, HttpFetchedHandler } from "../../helpers/httpExceptionHandler";
 import { transformToObjectId } from "../../helpers/helper";
 
-const { save: saveCategory, updateCategory: updateCategoryById, deleteCategory: deleteCategoryById } = CategoryService()
+const { save: saveCategory, updateCategory: updateCategoryById, deleteCategory: deleteCategoryById, getAllCategories } = CategoryService()
 export const CategoryController = () => {
     const createCategory = async (req: Request, res: Response) => {
         try {
@@ -24,6 +24,24 @@ export const CategoryController = () => {
             });
         } catch (error: any) {
             return HttpBadRequestHandler(res, { error: error.message });
+        }
+    }
+
+    const getCategoriesByUser = async (req: Request, res: Response) => {
+        try {
+            const userId = req.user as string;
+            const categories = await getAllCategories(userId)
+            if (categories.length < 1) {
+                return HttpBadRequestHandler(res, {message: "No categories associated with user id"})
+            }
+
+            return HttpFetchedHandler(res, {
+                message: "Categories are being catched successfully!",
+                success: true,
+                data: categories
+            })
+        } catch (error: any) {
+            return HttpBadRequestHandler(res, {error: error.message})
         }
     }
 
@@ -65,5 +83,5 @@ export const CategoryController = () => {
         }
     }
 
-    return { createCategory, updateCategory, deleteCategory }
+    return { createCategory, updateCategory, deleteCategory, getCategoriesByUser }
 }
