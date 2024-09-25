@@ -36,6 +36,11 @@ export const CategoryService = () => {
 
     const updateCategory = async (id: string, body: Record<string, string>) => {
         try {
+            const category = await findById(id);
+            const userId = transformToObjectId(body.userId, "user not found")
+            if (!category.userId && !userId.equals(category.userId)) {
+                throw new Error("Can't delete other user's and system category")
+            }
             const updatedCategory = await Category.findByIdAndUpdate(id, body, { new: true })
             if (!updatedCategory) {
                 throw new Error('Category not found.');
