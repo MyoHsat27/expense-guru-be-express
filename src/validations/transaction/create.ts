@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TransactionType } from "../../types/transaction";
 
-export const createValidation = z
+export const createTransactionValidation = z
     .object({
         categoryId: z.string({ message: "Need category!" }),
         amount: z

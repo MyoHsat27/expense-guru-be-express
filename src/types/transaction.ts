@@ -5,7 +5,7 @@ export const enum TransactionType {
 
 export interface TransactionObject {
   _id: string;
-  category: string;
+  categoryId: string;
   walletId: string;
   amount: number;
   type: TransactionType;
@@ -13,7 +13,7 @@ export interface TransactionObject {
 }
 
 export interface TransactionCreateObject {
-  category: string;
+  categoryId: string;
   amount: number;
   type: TransactionType;
 }

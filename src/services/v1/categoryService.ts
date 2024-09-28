@@ -37,6 +37,7 @@ export const CategoryService = () => {
     const updateCategory = async (id: string, body: Record<string, string>) => {
         try {
             const category = await findById(id);
+            await existingCategory(body.userId, category.name)
             const userId = transformToObjectId(body.userId, "user not found")
             if (!category.userId && !userId.equals(category.userId)) {
                 throw new Error("Can't delete other user's and system category")
@@ -61,6 +62,14 @@ export const CategoryService = () => {
         return category;
     }
 
+    const findOne = async (param: Record<string, string>) => {
+        const category = await Category.findOne(param);
+        if (!category) {
+            throw new Error("Category not found!")
+        }
+        return category;
+    };
+
     const deleteCategory = async (id: string, body: Record<string, string>) => {
         try {
             const category = await findById(id);
@@ -80,6 +89,7 @@ export const CategoryService = () => {
         getAllCategories,
         updateCategory,
         findById,
-        deleteCategory
+        deleteCategory,
+        findOne
     }
 }

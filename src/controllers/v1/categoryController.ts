@@ -36,7 +36,7 @@ export const CategoryController = () => {
             }
 
             return HttpFetchedHandler(res, {
-                message: "Categories are being catched successfully!",
+                message: "Categories are being caught successfully!",
                 success: true,
                 data: categories
             })

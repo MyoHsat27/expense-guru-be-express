@@ -25,3 +25,5 @@ const transactionSchema = new mongoose.Schema(
 )
 
 const Transaction = mongoose.models.transactions || mongoose.model('transactions', transactionSchema)
+
+export default Transaction;
