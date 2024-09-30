@@ -31,9 +31,48 @@ export const TransactionService = () => {
         }
     }
 
+    const getTotalTransaction = async (userId: string, type: string) => {
+        try {
+            const walletId = await findWalletByUser(userId);
+
+            const results = await Transaction.aggregate([
+                { $match: { walletId: walletId._id, type: type } },
+                {
+                    $group: {
+                        _id: "$type",
+                        totalAmount: { $sum: "$amount" },
+                    }
+                }
+            ]);
+
+            if (results.length === 0) {
+                console.log("No transactions found.");
+                return { [type]: 0 };
+            }
+
+            const formattedResults = results.reduce((acc, item) => {
+                acc[item._id] = item.totalAmount;
+                return acc;
+            }, {});
+
+            return formattedResults;
+        } catch (err: any) {
+            throw new Error("Failed to get total transactions: " + err.message);
+        }
+    };
+
+
+    const getTotalIncome = async (userId: string) =>{
+        return await getTotalTransaction(userId, "income")
+    }
+
+    const getTotalExpense = async (userId: string)=>{
+        return await getTotalTransaction(userId, "expense")
+    }
+
     const create = async (transaction: TransactionCreateObject, userId: string) => {
         const wallet = await findWalletByUser(userId);
-        const category = await findCategory({_id: transaction.categoryId, userId: userId});
+        const category = await findCategory({ _id: transaction.categoryId, userId: userId });
         const newTransaction = new Transaction({ ...transaction, walletId: wallet._id, categoryId: category._id });
         return newTransaction;
     }
@@ -52,7 +91,7 @@ export const TransactionService = () => {
 
     const updateTransactionCategory = async (transactionId: string, userId: string, categoryId: string) => {
         try {
-            const category = await findCategory({_id: categoryId, userId: userId})
+            const category = await findCategory({ _id: categoryId, userId: userId })
             const wallet = await findWalletByUser(userId);
 
             const currentTransaction = await Transaction.findOne({ _id: transactionId, walletId: wallet._id });
@@ -71,6 +110,8 @@ export const TransactionService = () => {
         save,
         getAllTransactions,
         getDetailTransaction,
-        updateTransactionCategory
+        updateTransactionCategory,
+        getTotalIncome,
+        getTotalExpense
     }
 }

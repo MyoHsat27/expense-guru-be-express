@@ -6,7 +6,7 @@ import { HttpBadRequestHandler, HttpCreatedHandler, HttpFetchedHandler } from ".
 import { walletService } from "../../services/v1/walletService";
 import { changeCategoryValidation } from "../../validations/transaction/change_category";
 
-const { save: saveTransaction, getAllTransactions, getDetailTransaction, updateTransactionCategory: changeTransactionCategory } = TransactionService();
+const { save: saveTransaction, getAllTransactions, getDetailTransaction, updateTransactionCategory: changeTransactionCategory, getTotalExpense: fetchTotalExpense, getTotalIncome: fetchTotalIncome } = TransactionService();
 
 export const TransactionController = () => {
     const createTransaction = async (req: Request, res: Response) => {
@@ -62,6 +62,32 @@ export const TransactionController = () => {
         }
     }
 
+    const getTotalIncome = async (req: Request, res: Response) => {
+        try {
+            const userId = req.user as string;
+            const response = await fetchTotalIncome(userId);
+            return HttpFetchedHandler(res, {
+                success: true,
+                data: response
+            })
+        } catch (err: any) {
+            return HttpBadRequestHandler(res, {error: err.message})
+        }
+    }
+
+    const getTotalExpense = async (req: Request, res: Response) => {
+        try {
+            const userId = req.user as string;
+            const response = await fetchTotalExpense(userId);
+            return HttpFetchedHandler(res, {
+                success: true,
+                data: response
+            })
+        } catch (err: any) {
+            return HttpBadRequestHandler(res, { error: err.message })
+        }
+    }
+
     const updateTransactionCategory = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
@@ -87,6 +113,8 @@ export const TransactionController = () => {
         createTransaction,
         getTransactionsByUser,
         getTransactionById,
-        updateTransactionCategory
+        updateTransactionCategory,
+        getTotalExpense,
+        getTotalIncome
     }
 }
