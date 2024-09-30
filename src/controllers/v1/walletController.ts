@@ -3,16 +3,15 @@ import { Request, Response } from "express";
 import { walletService } from "../../services/v1/walletService";
 import { UserObject } from "../../types/user";
 
-const { findByUserId: findBalanceByUserId } = walletService();
+const { findByUserId: findWalletByUser } = walletService();
 export const walletController = () => {
     const getBalance = async (req: Request, res: Response) => {
-        const user = req.user as UserObject;
-        const userId = user._id;
+        const userId = req.user as string;
         try {
-            const balance = await findBalanceByUserId(userId);
+            const wallet = await findWalletByUser(userId);
             return HttpFetchedHandler(res, {
                 success: true,
-                data: balance
+                data: wallet
             });
         } catch (error: any) {
             return HttpBadRequestHandler(res, { error: error.message });

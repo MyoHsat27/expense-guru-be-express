@@ -1,10 +1,11 @@
 import express, { Router, Request, Response } from "express";
 import { walletController } from "../../../controllers/v1/walletController";
 import passport from "passport";
+import { authenticateJWT } from "../../../middleware/authenticate";
 
 const router: Router = express.Router();
 const { getBalance } = walletController();
 
-router.get("/balance", passport.authenticate("jwt", { session: false }), getBalance);
+router.get("/balance", authenticateJWT, getBalance);
 
 export default router;
