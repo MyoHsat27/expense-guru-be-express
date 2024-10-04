@@ -46,7 +46,6 @@ export const TransactionService = () => {
             ]);
 
             if (results.length === 0) {
-                console.log("No transactions found.");
                 return { [type]: 0 };
             }
 
