@@ -3,15 +3,20 @@ import { TransactionCreateObject } from "../../types/transaction";
 import { walletService } from "./walletService";
 import { CategoryService } from "./categoryService";
 import { transformToObjectId } from "../../helpers/helper";
+import { TransactionTab } from "../../enums/transactionTab";
 
 const { findById: findCategoryById, findOne: findCategory } = CategoryService();
 const { findByUserId: findWalletByUser, calculateBalance: calculateWalletBalance } = walletService();
 
 export const TransactionService = () => {
-    const getAllTransactions = async (userId: string) => {
+    const getAllTransactions = async (userId: string, type?: string) => {
         try {
             const wallet = await findWalletByUser(userId);
-            const transactions = await Transaction.find({ walletId: wallet._id }).populate({ path: "categoryId", select: "name -_id" }).sort({ createdAt: -1 });
+            const query: { walletId: string, type?: string } = { walletId: wallet._id };
+            if (type && type !== TransactionTab.ALL) {
+                query.type = type.toLowerCase();
+            }
+            const transactions = await Transaction.find(query).populate({ path: "categoryId", select: "name -_id" }).sort({ createdAt: -1 });
             return transactions;
         } catch (err: any) {
             throw new Error("Failed to retrieve transactions: " + err.message)
@@ -61,11 +66,11 @@ export const TransactionService = () => {
     };
 
 
-    const getTotalIncome = async (userId: string) =>{
+    const getTotalIncome = async (userId: string) => {
         return await getTotalTransaction(userId, "income")
     }
 
-    const getTotalExpense = async (userId: string)=>{
+    const getTotalExpense = async (userId: string) => {
         return await getTotalTransaction(userId, "expense")
     }
 
