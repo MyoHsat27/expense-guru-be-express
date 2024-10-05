@@ -5,6 +5,7 @@ import { createTransactionValidation } from "../../validations/transaction/creat
 import { HttpBadRequestHandler, HttpCreatedHandler, HttpFetchedHandler } from "../../helpers/httpExceptionHandler";
 import { walletService } from "../../services/v1/walletService";
 import { changeCategoryValidation } from "../../validations/transaction/change_category";
+import { TransactionTab } from "../../enums/transactionTab";
 
 const { save: saveTransaction, getAllTransactions, getDetailTransaction, updateTransactionCategory: changeTransactionCategory, getTotalExpense: fetchTotalExpense, getTotalIncome: fetchTotalIncome } = TransactionService();
 
@@ -32,7 +33,10 @@ export const TransactionController = () => {
     const getTransactionsByUser = async (req: Request, res: Response) => {
         try {
             const userId = req.user as string;
-            const transactions = await getAllTransactions(userId);
+            const { tab } = req.query;
+            const validTypes = [TransactionTab.ALL, TransactionTab.INCOME, TransactionTab.EXPENSE];
+            const transactionType = tab && validTypes.includes(tab as TransactionTab) ? tab as TransactionTab : TransactionTab.ALL
+            const transactions = await getAllTransactions(userId, transactionType);
             if (transactions.length < 1) {
                 return HttpBadRequestHandler(res, { message: "No transaction created by user" })
             }
@@ -71,7 +75,7 @@ export const TransactionController = () => {
                 data: response
             })
         } catch (err: any) {
-            return HttpBadRequestHandler(res, {error: err.message})
+            return HttpBadRequestHandler(res, { error: err.message })
         }
     }
 
@@ -105,7 +109,7 @@ export const TransactionController = () => {
                 data: updatedTransaction
             })
         } catch (err: any) {
-            return HttpBadRequestHandler(res, {error: err.message})
+            return HttpBadRequestHandler(res, { error: err.message })
         }
     }
 
