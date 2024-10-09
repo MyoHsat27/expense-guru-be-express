@@ -33,16 +33,21 @@ export const TransactionController = () => {
     const getTransactionsByUser = async (req: Request, res: Response) => {
         try {
             const userId = req.user as string;
-            const { tab } = req.query;
+            const { tab, month } = req.query;
+
             const validTypes = [TransactionTab.ALL, TransactionTab.INCOME, TransactionTab.EXPENSE];
-            const transactionType = tab && validTypes.includes(tab as TransactionTab) ? tab as TransactionTab : TransactionTab.ALL
-            const transactions = await getAllTransactions(userId, transactionType);
-            if (transactions.length < 1) {
-                return HttpBadRequestHandler(res, { message: "No transaction created by user" })
+            if (tab && !validTypes.includes(tab as TransactionTab)) {
+                return HttpBadRequestHandler(res, {message: "Invalid transaction type"})
             }
 
+            if (month && (!/^(0[1-9]|1[0-2])$/.test(month as string))) {
+                return HttpBadRequestHandler(res, { message: "Invalid month format. Use MM format (e.g., '01' for January)." });
+            }
+
+            const transactions = await getAllTransactions(userId, tab as string, month as string);
+            
             return HttpFetchedHandler(res, {
-                message: "Transactions are being caught successfully!",
+                message: "Fetched transactions successfully!",
                 success: true,
                 data: transactions
             })

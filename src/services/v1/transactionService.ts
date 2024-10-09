@@ -9,12 +9,27 @@ const { findById: findCategoryById, findOne: findCategory } = CategoryService();
 const { findByUserId: findWalletByUser, calculateBalance: calculateWalletBalance } = walletService();
 
 export const TransactionService = () => {
-    const getAllTransactions = async (userId: string, type?: string) => {
+    const getAllTransactions = async (userId: string, type?: string, month?: string) => {
         try {
             const wallet = await findWalletByUser(userId);
-            const query: { walletId: string, type?: string } = { walletId: wallet._id };
+            const query: { walletId: string, type?: string, createdAt?: any } = { walletId: wallet._id };
             if (type && type !== TransactionTab.ALL) {
                 query.type = type.toLowerCase();
+            }
+            if (month) {
+                const monthNumber = parseInt(month);
+                let year = new Date().getFullYear();
+                const startOfMonth = new Date(`${year}-${month}-01`);
+                let endOfMonth: Date;
+                if (monthNumber === 12) {
+                    endOfMonth = new Date(`${year + 1}-01-01`);
+                } else {
+                    endOfMonth = new Date(`${year}-${monthNumber + 1}-01`);
+                }
+                query.createdAt = {
+                    $gte: startOfMonth,
+                    $lt: endOfMonth,
+                };
             }
             const transactions = await Transaction.find(query).populate({ path: "categoryId", select: "name -_id" }).sort({ createdAt: -1 });
             return transactions;
