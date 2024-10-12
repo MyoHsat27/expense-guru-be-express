@@ -9,6 +9,7 @@ export interface TransactionObject {
   walletId: string;
   amount: number;
   type: TransactionType;
+  note: string,
   _v: number;
 }
 
@@ -16,4 +17,5 @@ export interface TransactionCreateObject {
   categoryId: string;
   amount: number;
   type: TransactionType;
+  note: string
 }
