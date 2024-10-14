@@ -6,8 +6,9 @@ import { HttpBadRequestHandler, HttpCreatedHandler, HttpFetchedHandler } from ".
 import { walletService } from "../../services/v1/walletService";
 import { changeCategoryValidation } from "../../validations/transaction/change_category";
 import { TransactionTab } from "../../enums/transactionTab";
+import { changeNoteValidation } from "../../validations/transaction/change_note";
 
-const { save: saveTransaction, getAllTransactions, getDetailTransaction, updateTransactionCategory: changeTransactionCategory, getTotalExpense: fetchTotalExpense, getTotalIncome: fetchTotalIncome } = TransactionService();
+const { save: saveTransaction, getAllTransactions, getDetailTransaction, updateTransactionCategory: changeTransactionCategory, updateTransactionNote: changeNote, getTotalExpense: fetchTotalExpense, getTotalIncome: fetchTotalIncome } = TransactionService();
 
 export const TransactionController = () => {
     const createTransaction = async (req: Request, res: Response) => {
@@ -118,11 +119,33 @@ export const TransactionController = () => {
         }
     }
 
+    const updateTransactionNote = async(req: Request, res: Response) => {
+        try {
+            const userId = req.user as string;
+            const body = req.body;
+
+            const validationResult = validate(body, changeNoteValidation);
+            if (validationResult) {
+                return HttpBadRequestHandler(res, { error: validationResult });
+            }
+            
+            const updatedTransaction = await changeNote(body.id, userId, body.note);
+            return HttpFetchedHandler(res, {
+                message: "Transaction's note updated successfully!",
+                success: true,
+                data: updatedTransaction
+            })
+        } catch (err: any) {
+            return HttpBadRequestHandler(res, {error: err.message})
+        }
+    }
+
     return {
         createTransaction,
         getTransactionsByUser,
         getTransactionById,
         updateTransactionCategory,
+        updateTransactionNote,
         getTotalExpense,
         getTotalIncome
     }

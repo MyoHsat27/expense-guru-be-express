@@ -125,11 +125,29 @@ export const TransactionService = () => {
         }
     }
 
+    const updateTransactionNote = async (transactionId: string, userId: string, note: string) => {
+        try {
+            const wallet = await findWalletByUser(userId);
+            const id = transformToObjectId(transactionId, "transaction not found");
+
+            const currentTransaction = await Transaction.findOne({ _id: id, walletId: wallet._id });
+            if (!currentTransaction) {
+                throw new Error("Transaction not found!")
+            }
+            currentTransaction.note = note;
+            const updatedTransaction = await currentTransaction.save();
+            return updatedTransaction;
+        } catch (err: any) {
+            throw new Error("Failed to update the transaction's category: " + err.message)
+        }
+    }
+
     return {
         save,
         getAllTransactions,
         getDetailTransaction,
         updateTransactionCategory,
+        updateTransactionNote,
         getTotalIncome,
         getTotalExpense
     }
