@@ -15,6 +15,7 @@ export interface UserCreateObject {
 }
 
 export interface UserResponseObject {
+  id:string;
   username: string;
   email: string;
   isVerified: boolean;
