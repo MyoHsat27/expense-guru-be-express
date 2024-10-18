@@ -17,6 +17,10 @@ export function authMeUserResponseMapper(): Mapper {
         "UserObject",
         "UserResponseObject",
         forMember(
+            (d) => d.id,
+            mapFrom((s) => s._id)
+        ),
+        forMember(
             (d) => d.username,
             mapFrom((s) => s.username)
         ),
