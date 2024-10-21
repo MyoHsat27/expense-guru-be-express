@@ -1,19 +1,22 @@
 import { Request, Response, NextFunction } from "express";
-import { getDataFromToken } from "../utils/jwtManager";
 import { HttpUnauthorizedHandler } from "../helpers/httpExceptionHandler";
-
-interface JwtPayload {
-    _id: string;
-    username: string;
-    email: string;
-}
+import jsonwebtoken from "jsonwebtoken";
 
 // Middleware function to authenticate user via JWT token
 export const authenticateJWT = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const _id: string = await getDataFromToken(req);
-        req.user = _id; // Add user id to the request object
-        next(); // Call the next middleware or route handler
+        const authHeader = req.headers['authorization'];
+        if (!authHeader) return HttpUnauthorizedHandler(res, "No Authorization Header provided!");
+        const token = authHeader.split(' ')[1];
+        jsonwebtoken.verify(
+            token,
+            process.env.JWT_SECRET!,
+            (err, decoded: any) => {
+                if (err || !decoded) return HttpUnauthorizedHandler(res, "Invalid token");
+                req.user = decoded.id;
+                next();
+            }
+        )
     } catch (error: any) {
         return HttpUnauthorizedHandler(res, "Invalid or expired token."); // Respond to the client
     }

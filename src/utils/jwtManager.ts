@@ -7,9 +7,10 @@ export const generateToken = async (user:any) => {
         email: user.email,
         username: user.username,
     };
-    return await jsonwebtoken.sign(payload, process.env.JWT_SECRET!, {
-        expiresIn: "1d"
-    });
+    const accessToken = jsonwebtoken.sign(payload, process.env.JWT_SECRET!, {expiresIn: '15m'});
+    const refreshToken = jsonwebtoken.sign(payload, process.env.JWT_REFRESH_SECRET!, {expiresIn: '7d'});
+
+    return { accessToken, refreshToken };
 };
 
 export const getDataFromToken = (request: Request) => {

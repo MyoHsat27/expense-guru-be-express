@@ -1,13 +1,11 @@
 import express, { Router, Request, Response } from "express";
 import { userController } from "../../../controllers/v1/userController";
-import { authenticateJWT } from "../../../middleware/authenticate";
 
 const router: Router = express.Router();
-const { register, login, authMe,logout } = userController();
+const { register, login,logout } = userController();
 
 router.post("/register", register);
 router.post("/login", login);
-router.get("/logout", authenticateJWT, logout)
-router.get("/auth/me", authenticateJWT, authMe)
+router.get("/logout", logout)
 
 export default router;

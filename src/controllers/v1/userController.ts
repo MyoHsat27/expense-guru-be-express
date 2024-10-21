@@ -1,13 +1,11 @@
 import { Request, Response } from "express";
-import { HttpBadRequestHandler, HttpCreatedHandler } from "../../helpers/httpExceptionHandler";
+import { HttpBadRequestHandler, HttpCreatedHandler, HttpNoContentHandler } from "../../helpers/httpExceptionHandler";
 import { userService } from "../../services/v1/userService";
 import { validate } from "../../utils/zodValidation";
 import { signUpValidation } from "../../validations/signup";
 import { hashPassword, comparePassword } from "../../utils/passwordManager";
 import { signInValidation } from "../../validations/signin";
 import { generateToken } from "../../utils/jwtManager";
-import { authMeUserResponseMapper } from "../../utils/mappers/user.mapper";
-import { UserObject, UserResponseObject } from "../../types/user";
 
 const { findOne, save } = userService();
 export const userController = () => {
@@ -36,15 +34,18 @@ export const userController = () => {
                 email: user.email
             };
 
-            const token = await generateToken(tokenData);
-            res.cookie("authToken", token, {
+            const {accessToken, refreshToken} = await generateToken(tokenData);
+            res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
+                sameSite: "none",
+                secure: true,
+                maxAge: 7 * 24 * 60 * 60 * 1000
             });
 
             HttpCreatedHandler(res, {
                 message: "Login successful",
                 success: true,
-                authToken: token
+                accessToken: accessToken
             });
         } catch (error: any) {
             return HttpBadRequestHandler(res, { error: error.message });
@@ -84,24 +85,9 @@ export const userController = () => {
         }
     };
 
-    const authMe = async (req: Request, res: Response) => {
-        try {
-            const userId = req.user as string; // Ensure this has been set by `authenticateJWT`
-            const user = await findOne({ _id: userId });
-            const userResponse = authMeUserResponseMapper().map<UserObject, UserResponseObject>(user, "UserObject", "UserResponseObject")
-            return HttpCreatedHandler(res, {
-                message: "Authenticated User found",
-                success: true,
-                data: userResponse
-            });
-        } catch (error: any) {
-            return HttpBadRequestHandler(res, { error: error.message });
-        }
-    };
     const logout = async(req:Request,res:Response)=>{
-        try{
-            res.clearCookie("authToken",{httpOnly:true,secure:true});
-
+        try {
+            res.clearCookie("refreshToken",{httpOnly:true, sameSite: "none", secure: true});
             return HttpCreatedHandler(res,{
                 message:"Logout Successfully",
                 success:true
@@ -111,5 +97,5 @@ export const userController = () => {
             return   HttpBadRequestHandler(res, { error: error.message });
         }
     }
-    return { register, login, authMe, logout };
+    return { register, login, logout };
 };
