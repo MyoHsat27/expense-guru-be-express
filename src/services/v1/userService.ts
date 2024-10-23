@@ -29,5 +29,15 @@ export const userService = () => {
         return savedUser;
     };
 
-    return { findOne, save };
+    const updateUser = async (id: string, updateData: Partial<UserCreateObject>) => {
+        const user = await User.findById(id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        Object.assign(user, updateData); // Update the user object with the new data
+        const updatedUser = await user.save(); // Save the updated user to the database
+        return updatedUser;
+    };
+    return { findOne, save ,updateUser};
 };
