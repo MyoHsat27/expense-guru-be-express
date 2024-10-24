@@ -6,8 +6,11 @@ import { signUpValidation } from "../../validations/signup";
 import { hashPassword, comparePassword } from "../../utils/passwordManager";
 import { signInValidation } from "../../validations/signin";
 import { generateToken } from "../../utils/jwtManager";
+import { authMeUserResponseMapper } from "../../utils/mappers/user.mapper";
+import { UserObject, UserResponseObject } from "../../types/user";
+import { editUserValidation } from "../../validations/profile/edit";
 
-const { findOne, save } = userService();
+const { findOne, save , updateUser } = userService();
 export const userController = () => {
     const login = async (req: Request, res: Response) => {
         try {
@@ -97,5 +100,52 @@ export const userController = () => {
             return   HttpBadRequestHandler(res, { error: error.message });
         }
     }
-    return { register, login, logout };
+    const update = async(req:Request,res:Response)=>{
+        try{
+            const body = req.body;
+
+            const validatedResult = validate(body, editUserValidation);
+            if (validatedResult) {
+                return HttpBadRequestHandler(res, validatedResult);
+            }
+            const {id,username,email,password} = body;
+            const updateData: any = {
+                username,
+                email,   
+            };
+
+            if (password !== "") {
+                updateData.password = await hashPassword(password);
+            }
+            const updatedUser =  await updateUser(id,updateData);
+            console.log(updatedUser)
+            return HttpCreatedHandler(res,{
+                message:"Edit user succcessfully",
+                success:true,
+                passwordChanged:!!updateData.password
+            })
+        }catch(error:any){
+            return HttpBadRequestHandler(res,{error:error.message})
+        }
+    }
+    const checkPassword = async(req:Request,res:Response)=>{
+        try{
+            const {password,id} = req.body
+            const user = await findOne({_id:id})
+            if(!user){
+                return HttpBadRequestHandler(res,"User not found")
+            }
+            const isPasswordCorrect = await comparePassword(password,user.password);
+            if(!isPasswordCorrect){
+                return res.json({message:"Incorrect Password",success:false,status:400})
+            }
+            return HttpCreatedHandler(res,{
+                message:"Password is correct",
+                success:true
+            })
+        }catch(error:any){
+            return HttpBadRequestHandler(res,{error:error.message})
+        }
+    }
+    return { register, login, logout,update,checkPassword };
 };
