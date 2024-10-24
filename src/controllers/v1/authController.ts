@@ -24,7 +24,7 @@ export const authController = () => {
 
     const reNewAccessToken = async (req: Request, res: Response) => {
         const cookie = req.cookies;
-        if (!cookie?.refreshToken) return HttpUnauthorizedHandler(res, "No refreshToken is provided!");
+        if (!cookie?.refreshToken) return HttpUnauthorizedHandler(res, "Your session has expired. Please log in again.");
         const refreshToken = cookie.refreshToken;
 
         try {

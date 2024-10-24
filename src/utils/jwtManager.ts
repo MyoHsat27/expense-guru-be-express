@@ -8,7 +8,7 @@ export const generateToken = async (user:any) => {
         username: user.username,
     };
     const accessToken = jsonwebtoken.sign(payload, process.env.JWT_SECRET!, {expiresIn: '15m'});
-    const refreshToken = jsonwebtoken.sign(payload, process.env.JWT_REFRESH_SECRET!, {expiresIn: '7d'});
+    const refreshToken = jsonwebtoken.sign(payload, process.env.JWT_REFRESH_SECRET!, {expiresIn: '1d'});
 
     return { accessToken, refreshToken };
 };
