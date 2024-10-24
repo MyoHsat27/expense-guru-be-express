@@ -79,3 +79,10 @@ export function HttpServiceUnavailableHandler(res: Response, message: string | o
         ...transformMessage(message)
     });
 }
+
+export function HttpNoContentHandler(res: Response, message: string | object = "No Content"): void {
+    res.status(HttpStatus.NO_CONTENT).json({
+        status: HttpStatus.NO_CONTENT,
+        ...transformMessage(message)
+    });
+}

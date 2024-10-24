@@ -2,8 +2,11 @@ import express, { Router, Request, Response } from "express";
 import passport from "passport";
 import { generateToken } from "../../../utils/jwtManager";
 import { UserObject } from "../../../types/user";
+import { authenticateJWT } from "../../../middleware/authenticate";
+import { authController } from "../../../controllers/v1/authController";
 
 const router: Router = express.Router();
+const { authMe, reNewAccessToken} = authController();
 
 router.get(
     "/google",
@@ -39,5 +42,8 @@ router.get(
         return res.redirect("http://localhost:3000/auth/google-callback");
     }
 );
+
+router.get("/me", authenticateJWT, authMe);
+router.get("/refresh", reNewAccessToken);
 
 export default router;
