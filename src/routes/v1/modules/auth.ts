@@ -34,8 +34,11 @@ router.get(
         const token =await generateToken(user); // Generate JWT token
         
         // Set the token in the cookie
-        res.cookie("authToken", token, {
+        res.cookie("refreshToken", token.refreshToken, {
             httpOnly: true,
+            sameSite: "none",
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000
         });
 
         // Redirect to the home page
