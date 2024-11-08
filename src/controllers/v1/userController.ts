@@ -9,8 +9,13 @@ import { generateToken } from "../../utils/jwtManager";
 import { authMeUserResponseMapper } from "../../utils/mappers/user.mapper";
 import { UserObject, UserResponseObject } from "../../types/user";
 import { editUserValidation } from "../../validations/profile/edit";
+import nodemailer, { TransportOptions } from 'nodemailer'
+import dotenv from 'dotenv';
+import { transformToObjectId } from "../../helpers/helper";
+import User from "../../models/user";
+dotenv.config();
 
-const { findOne, save , updateUser } = userService();
+const { findOne, save, updateUser } = userService();
 export const userController = () => {
     const login = async (req: Request, res: Response) => {
         try {
@@ -37,7 +42,7 @@ export const userController = () => {
                 email: user.email
             };
 
-            const {accessToken, refreshToken} = await generateToken(tokenData);
+            const { accessToken, refreshToken } = await generateToken(tokenData);
             res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
                 sameSite: "none",
@@ -88,64 +93,130 @@ export const userController = () => {
         }
     };
 
-    const logout = async(req:Request,res:Response)=>{
+    const logout = async (req: Request, res: Response) => {
         try {
-            res.clearCookie("refreshToken",{httpOnly:true, sameSite: "none", secure: true});
-            return HttpCreatedHandler(res,{
-                message:"Logout Successfully",
-                success:true
+            res.clearCookie("refreshToken", { httpOnly: true, sameSite: "none", secure: true });
+            return HttpCreatedHandler(res, {
+                message: "Logout Successfully",
+                success: true
             });
-            
-        }catch(error:any){
-            return   HttpBadRequestHandler(res, { error: error.message });
+
+        } catch (error: any) {
+            return HttpBadRequestHandler(res, { error: error.message });
         }
     }
-    const update = async(req:Request,res:Response)=>{
-        try{
+    const update = async (req: Request, res: Response) => {
+        try {
             const body = req.body;
 
             const validatedResult = validate(body, editUserValidation);
             if (validatedResult) {
                 return HttpBadRequestHandler(res, validatedResult);
             }
-            const {id,username,email,password} = body;
+            const { id, username, email, password } = body;
             const updateData: any = {
                 username,
-                email,   
+                email,
             };
 
             if (password !== "") {
                 updateData.password = await hashPassword(password);
             }
+            const updatedUser = await updateUser(id, updateData);
+            return HttpCreatedHandler(res, {
+                message: "Edit user succcessfully",
+                success: true,
+                passwordChanged: !!updateData.password
+            })
+        } catch (error: any) {
+            return HttpBadRequestHandler(res, { error: error.message })
+        }
+    }
+    const checkPassword = async (req: Request, res: Response) => {
+        try {
+            const { password, id } = req.body
+            const user = await findOne({ _id: id })
+            if (!user) {
+                return HttpBadRequestHandler(res, "User not found")
+            }
+            const isPasswordCorrect = await comparePassword(password, user.password);
+            if (!isPasswordCorrect) {
+                return res.json({ message: "Incorrect Password", success: false, status: 400 })
+            }
+            return HttpCreatedHandler(res, {
+                message: "Password is correct",
+                success: true
+            })
+        } catch (error: any) {
+            return HttpBadRequestHandler(res, { error: error.message })
+        }
+    }
+    const sendPasswordRecoveryEmail = async (req: Request, res: Response) => {
+        try {
+            const { email } = req.body;
+            if (!email) {
+                return HttpBadRequestHandler(res, "Email is required")
+            }
+            const user = await findOne({ email });
+            if (!user) {
+                return HttpBadRequestHandler(res, "user not found");
+            }
+            const html = `
+        <p>Hi, ${user.username},</p>
+        <p>Here's your password recovery link</p>
+        <a href="http://localhost:3000/reset-password?id=${user._id}">Reset password here</a>
+        <p>Best regards, Expense Tracker</p>
+        `;
+
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.GOOGLE_ACCOUNT_USER,
+                    pass: process.env.GOOGLE_ACCOUNT_PASS,
+                }
+            } as TransportOptions);
+            if (user) {
+                const info = await transporter.sendMail({
+                    from: '"ExpenseGuru"<expense-guru@gmail.com',
+                    to: user.email,
+                    subject: 'Reset your password',
+                    html: html
+                });
+                return HttpCreatedHandler(res,{
+                    success:true,
+                    message:"Password Recovery email has been sent successfully"
+                })
+            }else{
+                return HttpBadRequestHandler(res,{error:"Something went wrong!"})
+            }
+        } catch (err: any) {
+            return HttpBadRequestHandler(res, { error: err.message })
+        }
+    }
+
+    const resetPassword = async(req:Request,res:Response)=>{
+        try{    
+            const {id,user} = req.body;
+            const userId = transformToObjectId(id,"user not found");
+            const userAvaiable = await User.findById({userId}); 
+            if (!userAvaiable) {
+                return HttpBadRequestHandler(res, "user not found");
+            }
+            const newPassword =  await hashPassword(user.password);
+            const updateData = {
+                password:newPassword
+            }
             const updatedUser =  await updateUser(id,updateData);
-            console.log(updatedUser)
-            return HttpCreatedHandler(res,{
-                message:"Edit user succcessfully",
-                success:true,
-                passwordChanged:!!updateData.password
+
+            return HttpCreatedHandler(res, {
+                message: "Password reset succcessfully",
+                success: true,
             })
-        }catch(error:any){
-            return HttpBadRequestHandler(res,{error:error.message})
+        }catch(err:any){
+            return HttpBadRequestHandler(res,{error:err.message})
         }
     }
-    const checkPassword = async(req:Request,res:Response)=>{
-        try{
-            const {password,id} = req.body
-            const user = await findOne({_id:id})
-            if(!user){
-                return HttpBadRequestHandler(res,"User not found")
-            }
-            const isPasswordCorrect = await comparePassword(password,user.password);
-            if(!isPasswordCorrect){
-                return res.json({message:"Incorrect Password",success:false,status:400})
-            }
-            return HttpCreatedHandler(res,{
-                message:"Password is correct",
-                success:true
-            })
-        }catch(error:any){
-            return HttpBadRequestHandler(res,{error:error.message})
-        }
-    }
-    return { register, login, logout,update,checkPassword };
+    return { register, login, logout, update, checkPassword, sendPasswordRecoveryEmail ,resetPassword};
 };
