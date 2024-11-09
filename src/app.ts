@@ -5,6 +5,7 @@ import { dbConnect } from "./config/mongoose";
 import usePassport from "./config/passport";
 import dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
+import initializeWorker from "./workers/transaction.worker";
 dotenv.config();
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(cookieParser())
 app.use(express.json());
 
 dbConnect();
+initializeWorker();
 
 usePassport(app);
 
