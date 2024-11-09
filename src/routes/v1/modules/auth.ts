@@ -6,7 +6,31 @@ import { authenticateJWT } from "../../../middleware/authenticate";
 import { authController } from "../../../controllers/v1/authController";
 
 const router: Router = express.Router();
-const { authMe, reNewAccessToken} = authController();
+const { authMe, reNewAccessToken } = authController();
+
+const authSuccess = async(req:any,res:any)=>{
+    if (!req.user) {
+        return res.status(400).json({
+            success: false,
+            message: "User authentication failed.",
+        });
+    }
+
+    const user = req.user as UserObject;
+    const token = await generateToken(user); // Generate JWT token
+
+    // Set the token in the cookie
+    res.cookie("refreshToken", token.refreshToken, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        maxAge: 24 * 60 * 60 * 1000
+    });
+
+    // Redirect to the home page
+    return res.redirect(`http://localhost:3000/auth/Oauth-callback`);
+}
+
 
 router.get(
     "/google",
@@ -21,30 +45,26 @@ router.get(
         session: false,
         failureRedirect: "/users/login",
         failureMessage: true
-    }), async(req, res) => {
+    }), async(req,res)=>{
+        await authSuccess(req,res)
+    });
 
-        if (!req.user) {
-            return res.status(400).json({
-                success: false,
-                message: "User authentication failed.",
-            });
-        }
-
-        const user = req.user as UserObject; 
-        const token =await generateToken(user); // Generate JWT token
-        
-        // Set the token in the cookie
-        res.cookie("refreshToken", token.refreshToken, {
-            httpOnly: true,
-            sameSite: "none",
-            secure: true,
-            maxAge: 24 * 60 * 60 * 1000
-        });
-
-        // Redirect to the home page
-        return res.redirect("http://localhost:3000/auth/google-callback");
-    }
+router.get('/github',
+    passport.authenticate('github', { session: false }),
 );
+
+router.get('/github/callback',
+    passport.authenticate("github",
+        {
+            failureRedirect: '/login',
+            session: false,
+            failureMessage:true
+        }
+    ), async (req, res) => {
+       await authSuccess(req,res);
+    }
+)
+
 
 router.get("/me", authenticateJWT, authMe);
 router.get("/refresh", reNewAccessToken);
