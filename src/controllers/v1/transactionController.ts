@@ -7,6 +7,10 @@ import { walletService } from "../../services/v1/walletService";
 import { changeCategoryValidation } from "../../validations/transaction/change_category";
 import { TransactionTab } from "../../enums/transactionTab";
 import { changeNoteValidation } from "../../validations/transaction/change_note";
+import { monthlyScheduleTransactionValidation, onceScheduleTransactionValidation, weeklyScheduleTransactionValidation } from "../../validations/transaction/schedule_transaction";
+import scheduleTransactionJob from "../../queues/transaction.queue";
+import { ScheduledTransaction } from "../../types/scheduledTransaction";
+import { FrequencyType } from "../../enums/queue";
 
 const { save: saveTransaction, getAllTransactions, getDetailTransaction, updateTransactionCategory: changeTransactionCategory, updateTransactionNote: changeNote, getTotalExpense: fetchTotalExpense, getTotalIncome: fetchTotalIncome } = TransactionService();
 
@@ -136,7 +140,37 @@ export const TransactionController = () => {
                 data: updatedTransaction
             })
         } catch (err: any) {
-            return HttpBadRequestHandler(res, {error: err.message})
+            return HttpBadRequestHandler(res, { error: err.message })
+        }
+    }
+
+    const scheduleTransaction = async (req: Request, res: Response) => {
+        try {
+            const userId = req.user as string;
+            const body = req.body;
+
+            let validationResult;
+            if (body.frequency === FrequencyType.ONCE) {
+                validationResult = validate(body, onceScheduleTransactionValidation);
+            } else if (body.frequency === FrequencyType.WEEKLY) {
+                validationResult = validate(body, weeklyScheduleTransactionValidation);
+            } else if (body.frequency === FrequencyType.MONTHLY) {
+                validationResult = validate(body, monthlyScheduleTransactionValidation);
+            }
+
+            if (validationResult) {
+                return HttpBadRequestHandler(res, { error: validationResult });
+            }
+
+            const schedule: ScheduledTransaction = { ...body, userId };
+            const scheduledTransaction = await scheduleTransactionJob(schedule);
+            return HttpCreatedHandler(res, {
+                message: "Transaction is scheduled successfully.",
+                success: true,
+                data: scheduledTransaction
+            })
+        } catch (err: any) {
+            return HttpBadRequestHandler(res, { error: err.message })
         }
     }
 
@@ -147,6 +181,7 @@ export const TransactionController = () => {
         updateTransactionCategory,
         updateTransactionNote,
         getTotalExpense,
-        getTotalIncome
+        getTotalIncome,
+        scheduleTransaction
     }
 }
