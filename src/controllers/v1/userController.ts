@@ -13,6 +13,7 @@ import nodemailer, { TransportOptions } from 'nodemailer'
 import dotenv from 'dotenv';
 import { transformToObjectId } from "../../helpers/helper";
 import User from "../../models/user";
+import crypto from "crypto"
 dotenv.config();
 
 const { findOne, save, updateUser } = userService();
@@ -161,10 +162,19 @@ export const userController = () => {
             if (!user) {
                 return HttpBadRequestHandler(res, "user not found");
             }
+            const Oauth = user.Oauth;
+            if(Oauth){
+                return HttpBadRequestHandler(res,"Your account is linked with Google or Github.Password reset unavaiable.Please log in using Google or Github credentails[Not password user]")
+            }
+            const token = crypto.randomUUID();
+            
+            await User.findByIdAndUpdate(user._id,{
+                forgotPasswordToken:token
+            })
             const html = `
         <p>Hi, ${user.username},</p>
         <p>Here's your password recovery link</p>
-        <a href="http://localhost:3000/reset-password?id=${user._id}">Reset password here</a>
+        <a href="http://localhost:3000/reset-password?token=${token}">Reset password here</a>
         <p>Best regards, Expense Tracker</p>
         `;
 
@@ -198,9 +208,8 @@ export const userController = () => {
 
     const resetPassword = async(req:Request,res:Response)=>{
         try{    
-            const {id,user} = req.body;
-            const userId = transformToObjectId(id,"user not found");
-            const userAvaiable = await User.findById({userId}); 
+            const {token,user} = req.body;
+            const userAvaiable = await User.findOne({forgotPasswordToken:token})
             if (!userAvaiable) {
                 return HttpBadRequestHandler(res, "user not found");
             }
@@ -208,7 +217,7 @@ export const userController = () => {
             const updateData = {
                 password:newPassword
             }
-            const updatedUser =  await updateUser(id,updateData);
+            const updatedUser =  await updateUser(userAvaiable._id,updateData);
 
             return HttpCreatedHandler(res, {
                 message: "Password reset succcessfully",

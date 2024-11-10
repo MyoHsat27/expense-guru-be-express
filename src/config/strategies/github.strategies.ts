@@ -28,6 +28,7 @@ const githubStrategy = new GithubStrategy(githubOptions,async(accessToken:any, r
                 username: name,
                 email: email,
                 password: hashedPassword!,
+                Oauth:true
             };
             user = await save(newUser)
         }

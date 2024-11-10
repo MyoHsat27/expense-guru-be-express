@@ -12,6 +12,7 @@ export interface UserCreateObject {
   username: string;
   email: string;
   password: string;
+  Oauth?:boolean
 }
 
 export interface UserResponseObject {
