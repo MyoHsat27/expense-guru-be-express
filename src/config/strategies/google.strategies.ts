@@ -29,6 +29,7 @@ const googleStrategy = new GoogleStrategy(googleOptions, async (accessToken, ref
                 username: name!,
                 email: email!,
                 password: hashedPassword!,
+                Oauth:true
             };
             user = await save(newUser)
         }
